@@ -1,0 +1,103 @@
+import tensorflow as tf #tensorflow 함수 부르기
+import numpy as np  #numpy함수 부르기
+
+tf.enable_eager_execution()
+
+x_data = [1, 2, 3, 4, 5]  #numpy함수 부르기
+y_data = [1, 2, 3, 4, 5] #Y값의 데이터
+
+import matplotlib.pyplot as plt
+plt.plot(x_data, y_data, 'o')
+plt.ylim(0, 8)
+
+Hypothesis
+v =[1., 2., 3., 4.] #계산하고자 하는 값(랭크 값)
+tf.reduce_mean(v) # 2.5 #차원이 줄어든다. 랭크가 줄어들면서 mean을 구함 
+tf.square(3) # 9 #3을 제곱한다. Square=제곱한다는 뜻
+
+x_data = [1, 2, 3, 4, 5] #x값의 데이터
+y_data = [1, 2, 3, 4, 5] #Y값의 데이터
+ 
+W = tf.Variable(2.0) #W를 2.0으로 정의한다
+b = tf.Variable(0.5) #b를 2.5로 정의한다.
+
+hypothesis = W * x_data + b # 나의 가설함수
+W.numpy(), b.numpy()#위에서 지정한 W와 b의 값
+hypothesis.numpy()
+
+plt.plot(x_data, hypothesis.numpy(), 'r-')
+plt.plot(x_data, y_data, 'o')
+plt.ylim(0, 8)
+plt.show()#그래프로 표현 만들어 놓은 LP문제에 넣는다.
+
+cost = tf.reduce_mean(tf.square(hypothesis - y_data))#단순화 된 cost함수
+
+with tf.GradientTape() as tape: #경사하강법을 구현하는 방법, 변수를 tape에 기록한다.
+    hypothesis = W * x_data + b #나의 가설 함수
+    cost = tf.reduce_mean(tf.square(hypothesis - y_data)) #단순화 된 cost함수
+
+W_grad, b_grad = tape.gradient(cost, [W, b])#기울기(개별 미분값 W, b)를 구해서 grad로 구현한다. 순서대로 구현된다.
+W_grad.numpy(), b_grad.numpy()#위에서 지정한 W와 b의 값
+
+피라미터 업데이트
+learning_rate = 0.01 #러닝메이트는 grad의 값을 얼만큼 반영할 것인지 결정한다
+
+W.assign_sub(learning_rate * W_grad)# assign은 뺀 값을 다시 W에 할당한다. 값을 업데이트 시킨다.
+b.assign_sub(learning_rate * b_grad)# assign은 뺀 값을 다시 b에 할당한다. 값을 업데이트 시킨다.
+
+W.numpy(), b.numpy()#위에서 지정한 W와 b의 값
+
+plt.plot(x_data, hypothesis.numpy(), 'r-')
+plt.plot(x_data, y_data, 'o')
+plt.ylim(0, 8)
+
+W = tf.Variable(2.9)#W를 2.9으로 정의한다.
+b = tf.Variable(0.5)#W를 0.5으로 정의한다.
+
+for i in range(100): #100번 수행하게 한다.
+    with tf.GradientTape() as tape: #경사하강법을 구현하는 방법, 변수를 tape에 기록한다.
+        hypothesis = W * x_data + b #나의 가설 함수
+        cost = tf.reduce_mean(tf.square(hypothesis - y_data)) #단순화 된 cost함수
+    W_grad, b_grad = tape.gradient(cost, [W, b]) #기울기(개별 미분값 W,b)를 구해서 grad로 구현한다. 순서대로 구현된다.
+    W.assign_sub(learning_rate * W_grad)) # assign은 뺀 값을 다시 W에 할당한다. 값을 업데이트 시킨다.
+    b.assign_sub(learning_rate * b_grad)) # assign은 뺀 값을 다시 b에 할당한다. 값을 업데이트 시킨다.
+    if i % 10 == 0 :# i값이 10의 배수가 될 때마다 프린xm한다.
+      print("{:5}|{:10.4f}|{:10.4f}|{:10.6f}".format(i, W.numpy(), b.numpy(), cost))#중간중간 10배수가 되는 값 프린트 된 것(W, b의 값)
+
+plt.plot(x_data, y_data, 'o')
+plt.plot(x_data, hypothesis.numpy(), 'r-')
+plt.ylim(0, 8)
+
+
+print(W * 5 + b) #x에 5를 넣었을 때 실제로 5에 가까운지 확인한다.
+print(W * 2.5 + b)#x에 5를 넣었을 때 실제로 2.5에 가까운지 확인한다.
+
+import tensorflow as tf #tensorflow 함수 부르기
+import numpy as np #tensorflow 함수 부르기
+tf.enable_eager_execution()
+
+# Data
+x_data = [1, 2, 3, 4, 5] #X값의 데이터
+y_data = [1, 2, 3, 4, 5] #Y값의 데이터
+
+# W, b initialize W, b 초기 내용 설정(정의)
+W = tf.Variable(2.9) # W를 2.9으로 정의한다.
+b = tf.Variable(0.5) #b를 0.5으로 정의한다.
+
+# W, b update
+for i in range(100): #100번 수행하게 한다.
+    # Gradient descent
+    with tf.GradientTape() as tape:#경사하강법을 구현하는 방법, 변수를 tape에 기록한다.
+        hypothesis = W * x_data + b #나의 가설 함수
+        cost = tf.reduce_mean(tf.square(hypothesis - y_data)) #단순화 된 cost함수
+    W_grad, b_grad = tape.gradient(cost, [W, b]) #기울기(개별 미분값 W,b)를 구해서 grad로 구현한다. 순서대로 구현된다.
+    W.assign_sub(learning_rate * W_grad)# assign은 뺀 값을 다시 W에 할당한다. 값을 업데이트 시킨다.
+    b.assign_sub(learning_rate * b_grad)# assign은 뺀 값을 다시 b에 할당한다. 값을 업데이트 시킨다.
+    if i % 10 == 0: # i값이 10의 배수가 될 때마다 프린트한다
+      print("{:5}|{:10.4f}|{:10.4f}|{:10.6f}".format(i, W.numpy(), b.numpy(), cost))#중간중간 10배수가 되는 값 프린트 된 것(W, b의 값) 
+
+print()
+
+# predict
+print(W * 5 + b) #x에 5를 넣었을 때 실제로 5에 가까운지 확인한다.
+print(W * 2.5 + b)#x에 2.5를 넣었을 때 실제로 2.5에 가까운지 확인한다.
