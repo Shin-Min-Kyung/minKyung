@@ -1,0 +1,49 @@
+import numpy as np #numpy함수 부르기
+import matplotlib.pyplot as plt #matplotlib.pyplot 부르기
+%matplotlib inline #그래프를 표현하기 위한 라인
+import tensorflow as tf #tensorflow 함수 부르기
+import tensorflow.contrib.eager as tfe #tensorflow.contrib.eager 부르기
+
+tf.enable_eager_execution() 
+tf.set_random_seed(777)  # for reproducibility #씨드 초기화
+print(tf.__version__) #버전 확인하기
+
+xy = np.loadtxt('data-03-diabetes.csv', delimiter=',', dtype=np.float32)  #데이터를 읽는다.
+x_train = xy[:, 0:-1]  #데이터 분리
+y_train = xy[:, [-1]] #데이터 분리
+
+print(x_train.shape, y_train.shape) #데이터가 제대로 분리되었는지 확인한다.
+print(xy)
+
+dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(len(x_train)) 
+
+W = tf.Variable(tf.random_normal([8, 1]), name='weight') #Rank가 1인 랜덤한 값을 weight에 부여, 3개가 들어가서 1개의 결과로 나온다. 
+b = tf.Variable(tf.random_normal([1]), name='bias')#Rank가 1인 랜덤한 값을 bias에 부여, 1개의 출력값을 가진다.
+def logistic_regression(features): #logistic_regression의 특징 정의
+    hypothesis  = tf.div(1., 1. + tf.exp(tf.matmul(features, W) + b)) #나의 가설함수
+    return hypothesis
+    
+def loss_fn(hypothesis, features, labels): 
+    cost = -tf.reduce_mean(labels * tf.log(logistic_regression(features)) + (1 - labels) * tf.log(1 - hypothesis)) #단순화 된 cost함수
+    return cost
+
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)#미분을 통해 최저 비용을 향해 진행하도록 만드는 핵심 함수
+
+def accuracy_fn(hypothesis, labels): #가설의 정확성 판단
+    predicted = tf.cast(hypothesis > 0.5, dtype=tf.float32) #)#예측값 H(X)>0.5 is true, else false 
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(predicted, labels), dtype=tf.int32))#결과값과 예측 값이 같은지를 비교하교 평균을 구한다.
+    return accuracy
+    
+    def grad(hypothesis, features, labels): #가설, 특징, 라벨의 대한 정의
+    with tf.GradientTape() as tape: #경사하강법을 구현하는 방법, 변수를 tape에 기록한다.
+        loss_value = loss_fn(logistic_regression(features),features,labels)
+    return tape.gradient(loss_value, [W,b]) 
+    
+    EPOCHS = 1001 # 횟수 정함
+
+for step in range(EPOCHS): #EPOCHS만큼 즉, 1001번 실행
+    for features, labels  in tfe.Iterator(dataset):
+        grads = grad(logistic_regression(features), features, labels) #등급은 logistic_regressiond특징, 라벨을 따른다
+        optimizer.apply_gradients(grads_and_vars=zip(grads,[W,b]))  #한계를 개선한다.
+        if step % 100 == 0:#출력이 너무 많이 발생하는 관계로 10번에 한 번씩만 출력하도록 조절한다
+            print("Iter: {}, Loss: {:.4f}".format(step, loss_fn(logistic_regression(features),feature
